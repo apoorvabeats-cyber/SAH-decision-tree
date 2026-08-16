@@ -1,0 +1,5 @@
+Trigger commit to start Pages and QR workflows
+
+Timestamp: 2026-08-16T21:19:00Z
+
+This is an automated empty-style trigger file to start GitHub Actions workflows for Pages deployment and QR generation.
