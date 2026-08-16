@@ -1,0 +1,40 @@
+name: Generate captioned QR
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Download QR PNG
+        run: |
+          wget -O qr-sah.png "https://api.qrserver.com/v1/create-qr-code/?size=3000x3000&data=https%3A%2F%2Fapoorvabeats-cyber.github.io%2FSAH-decision-tree%2Fgo%2F&format=png&ecc=H"
+
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick
+
+      - name: Create captioned PNG
+        run: |
+          convert qr-sah.png -background white -splice 0x200 -gravity south -pointsize 48 -annotate +0+24 "Scan for the SAH interactive protocol — Acute SAH Management" qr-sah-caption.png
+
+      - name: Commit and push captioned PNG
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add qr-sah-caption.png
+          git commit -m "Add captioned QR PNG" || echo "No changes to commit"
+          git push
