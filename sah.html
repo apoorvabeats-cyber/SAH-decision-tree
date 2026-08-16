@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAH Management & Treatment Decision Tree</title>
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #eff6ff;
+      --accent: #dc2626;
+      --accent-light: #fef2f2;
+      --border: #cbd5e1;
+      --bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --success: #16a34a;
+      --warning: #d97706;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .widget-container {
+      max-width: 720px;
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .header h2 {
+      margin: 0 0 6px 0;
+      color: var(--primary);
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    .header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .node {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    .node.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .question-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .option-btn {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary);
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    /* Outcome Panel Styling */
+    .outcome-card {
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 10px;
+      border-left: 5px solid var(--primary);
+      background: var(--primary-light);
+    }
+
+    .outcome-card.urgent {
+      border-left-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .outcome-card.warning {
+      border-left-color: var(--warning);
+      background: #fffbebf;
+    }
+
+    .outcome-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .outcome-card ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .outcome-card li {
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .btn-secondary {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+
+    .breadcrumbs {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+
+<div class="widget-container">
+  <div class="header">
+    <h2>Acute SAH Management Protocol</h2>
+    <p>Interactive Critical Care Decision Tree</p>
+  </div>
+
+  <!-- STEP 1: Presentation / Airway -->
+  <div id="step-start" class="node active">
+    <div class="question-title">1. Initial Clinical Assessment</div>
+    <div class="question-desc">Evaluate level of consciousness (GCS) and airway stability upon arrival.</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('step-unstable')">GCS ≤ 8 or Unstable Airway</button>
+      <button class="option-btn" onclick="navigateTo('step-stable')">GCS > 8 and Stable Airway</button>
+    </div>
+  </div>
+
+  <!-- STEP 1A: Unstable Airway -->
+  <div id="step-unstable" class="node">
+    <div class="outcome-card urgent">
+      <h3>Immediate Airway & Hemodynamic Stabilization</h3>
+      <ul>
+        <li><strong>Action:</strong> Endotracheal Intubation (RSI with minimal BP rise).</li>
+        <li><strong>Target SBP:</strong> Keep SBP < 160 mmHg (IV Labetalol or Nicardipine).</li>
+        <li><strong>Line Placement:</strong> Invasive arterial line & central venous access.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-ct-confirm')">Proceed to Imaging →</button>
+    </div>
+  </div>
+
+  <!-- STEP 1B: Stable -->
+  <div id="step-stable" class="node">
+    <div class="question-title">2. Blood Pressure Management</div>
+    <div class="question-desc">Check current Systolic Blood Pressure (SBP).</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('step-bp-high')">SBP > 160 mmHg</button>
+      <button class="option-btn" onclick="navigateTo('step-ct-confirm')">SBP ≤ 160 mmHg</button>
+    </div>
+  </div>
+
+  <!-- STEP 2A: High BP -->
+  <div id="step-bp-high" class="node">
+    <div class="outcome-card warning">
+      <h3>Antihypertensive Titration</h3>
+      <ul>
+        <li><strong>Goal:</strong> Titrate SBP < 160 mmHg to reduce re-bleeding risk prior to securing aneurysm.</li>
+        <li><strong>Agents:</strong> Continuous Nicardipine infusion (5–15 mg/h) or Labetalol boluses.</li>
+        <li><strong>Caution:</strong> Avoid sharp drops in Mean Arterial Pressure (MAP) to maintain cerebral perfusion.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-ct-confirm')">Proceed to Imaging →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Imaging & Diagnostic -->
+  <div id="step-ct-confirm" class="node">
+    <div class="question-title">3. Diagnostic & Anatomical Confirmation</div>
+    <div class="question-desc">Select primary diagnostic finding / complication state:</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('step-aneurysm-securing')">Confirmed Aneurysm (CTA/DSA)</button>
+      <button class="option-btn" onclick="navigateTo('step-hydrocephalus')">Acute Ventriculomegaly / Hydrocephalus</button>
+    </div>
+  </div>
+
+  <!-- STEP 4A: Aneurysm Securing -->
+  <div id="step-aneurysm-securing" class="node">
+    <div class="question-title">4. Aneurysm Treatment Modality Selection</div>
+    <div class="question-desc">Evaluate anatomy and surgical risk for definitive repair:</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('outcome-coiling')">Endovascular Coiling (Preferred)</button>
+      <button class="option-btn" onclick="navigateTo('outcome-clipping')">Surgical Clipping</button>
+    </div>
+  </div>
+
+  <!-- OUTCOME: Coiling -->
+  <div id="outcome-coiling" class="node">
+    <div class="outcome-card">
+      <h3>Definitive Repair: Endovascular Coiling</h3>
+      <ul>
+        <li><strong>Indication:</strong> Favorable anatomy, elderly patients, or anterior circulation aneurysms.</li>
+        <li><strong>Timing:</strong> Perform within 24 hours of rupture to prevent re-bleeding.</li>
+        <li><strong>Post-Procedure:</strong> Transition immediately to ICU for vasospasm monitoring.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-delayed-comp')">Delayed Complications →</button>
+    </div>
+  </div>
+
+  <!-- OUTCOME: Clipping -->
+  <div id="outcome-clipping" class="node">
+    <div class="outcome-card">
+      <h3>Definitive Repair: Surgical Clipping</h3>
+      <ul>
+        <li><strong>Indication:</strong> Middle Cerebral Artery (MCA) aneurysms, large parenchymal hematomas requiring evacuation, or wide-necked aneurysms.</li>
+        <li><strong>Timing:</strong> Perform within 24 hours post-bleed.</li>
+        <li><strong>Post-Procedure:</strong> ICU admission for ICP management and neuro-monitoring.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-delayed-comp')">Delayed Complications →</button>
+    </div>
+  </div>
+
+  <!-- STEP 4B: Hydrocephalus -->
+  <div id="step-hydrocephalus" class="node">
+    <div class="outcome-card urgent">
+      <h3>External Ventricular Drain (EVD) Protocol</h3>
+      <ul>
+        <li><strong>Indication:</strong> Acute symptomatic hydrocephalus or GCS deterioration.</li>
+        <li><strong>Action:</strong> Place EVD; level transducer to external auditory meatus (Tragus).</li>
+        <li><strong>Target:</strong> Maintain ICP < 20 mmHg with controlled CSF drainage.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-aneurysm-securing')">Proceed to Aneurysm Repair →</button>
+    </div>
+  </div>
+
+  <!-- STEP 5: Delayed Complications (Vasospasm / DCI) -->
+  <div id="step-delayed-comp" class="node">
+    <div class="question-title">5. Delayed Cerebral Ischemia (DCI) Management (Days 3–14)</div>
+    <div class="question-desc">Standard prophylaxis for all post-repair SAH patients:</div>
+    <div class="outcome-card">
+      <h3>DCI Prophylaxis & Monitoring</h3>
+      <ul>
+        <li><strong>Oral Nimodipine:</strong> 60 mg q4h for 21 days (essential neurovascular protection).</li>
+        <li><strong>Fluid Status:</strong> Maintain strict euvolemia (avoid hypervolemia or prophylactic hemodilution).</li>
+        <li><strong>Monitoring:</strong> Daily Transcranial Doppler (TCD); mean flow velocities > 120 cm/s indicate vasospasm.</li>
+        <li><strong>Rescue Therapy:</strong> Induced hypertension (Norepinephrine) or endovascular intra-arterial vasodilator infusion for refractory ischemia.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Full Protocol</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let historyStack = ['step-start'];
+
+  function navigateTo(nodeId) {
+    // Hide all nodes
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => node.classList.remove('active'));
+
+    // Show target node
+    const targetNode = document.getElementById(nodeId);
+    if (targetNode) {
+      targetNode.classList.add('active');
+      historyStack.push(nodeId);
+    }
+  }
+
+  function restart() {
+    historyStack = ['step-start'];
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => node.classList.remove('active'));
+    document.getElementById('step-start').classList.add('active');
+  }
+</script>
+
+</body>
+</html>
