@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600" role="img" aria-label="QR code linking to the Interactive Stroke Decision Tool">
+  <title>QR — Interactive Stroke Decision Tool</title>
+  <desc>Scan to open: https://apoorvabeats-cyber.github.io/SAH-decision-tree/stroke-tool.html</desc>
+  <!-- Embedded raster QR (served by qrserver) as an image fallback; using high-res PNG URL -->
+  <image href="https://api.qrserver.com/v1/create-qr-code/?size=3000x3000&data=https%3A%2F%2Fapoorvabeats-cyber.github.io%2FSAH-decision-tree%2Fstroke-tool.html&format=png&ecc=H" x="0" y="0" width="600" height="600" preserveAspectRatio="xMidYMid meet"/>
+  <!-- Caption/label under the QR inside the SVG canvas -->
+  <rect x="0" y="540" width="600" height="60" fill="#ffffff" opacity="0.9" />
+  <text x="300" y="580" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#0f172a" text-anchor="middle">apoorvabeats-cyber.github.io/SAH-decision-tree/stroke-tool.html</text>
+</svg>
