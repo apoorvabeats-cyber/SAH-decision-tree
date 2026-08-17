@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ARDS Management Decision Tree</title>
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-accent: #0284c7;
+      --primary-light: #f0f9ff;
+      --accent-danger: #dc2626;
+      --danger-light: #fef2f2;
+      --warning: #d97706;
+      --warning-light: #fffbeb;
+      --border: #cbd5e1;
+      --bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .widget-container {
+      max-width: 740px;
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .header {
+      border-bottom: 2px solid var(--primary-accent);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+
+    .header h2 {
+      margin: 0 0 6px 0;
+      color: var(--primary);
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+    }
+
+    .header p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .node {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    .node.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .question-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .question-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .option-btn {
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .option-btn:hover {
+      border-color: var(--primary-accent);
+      background-color: var(--primary-light);
+      color: var(--primary-accent);
+    }
+
+    .outcome-card {
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 10px;
+      border-left: 5px solid var(--primary-accent);
+      background: var(--primary-light);
+    }
+
+    .outcome-card.urgent {
+      border-left-color: var(--accent-danger);
+      background: var(--danger-light);
+    }
+
+    .outcome-card.warning {
+      border-left-color: var(--warning);
+      background: var(--warning-light);
+    }
+
+    .outcome-card h3 {
+      margin: 0 0 10px 0;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .outcome-card ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .outcome-card li {
+      margin-bottom: 8px;
+      font-size: 0.92rem;
+      line-height: 1.4;
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .btn-secondary {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    .btn-secondary:hover {
+      background: #f1f5f9;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+<div class="widget-container">
+  <div class="header">
+    <h2>ARDS Management Protocol</h2>
+    <p>Critical Care Mechanical Ventilation & Rescue Triage</p>
+    <div style="margin-top:12px; display:flex; align-items:center; gap:12px;">
+      <img src="ards-tool-qr.svg" alt="Scan to open ARDS Management Tool" style="max-width:140px;height:auto;border:1px solid var(--border);border-radius:8px;padding:6px;background:#fff">
+      <div style="font-size:0.9rem;color:var(--text-muted)">Scan to open the interactive ARDS tool</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Severity Stratification -->
+  <div id="step-start" class="node active">
+    <div class="question-title">1. ARDS Diagnosis & Severity Stratification (Berlin Definition)</div>
+    <div class="question-desc">Evaluate PaO2/FiO2 ratio on PEEP ≥ 5 cmH2O with bilateral infiltrates not fully explained by heart failure.</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('step-mild')">Mild ARDS (200 < PaO2/FiO2 ≤ 300)</button>
+      <button class="option-btn" onclick="navigateTo('step-moderate')">Moderate ARDS (100 < PaO2/FiO2 ≤ 200)</button>
+      <button class="option-btn" onclick="navigateTo('step-severe')">Severe ARDS (PaO2/FiO2 ≤ 100)</button>
+    </div>
+  </div>
+
+  <!-- STEP 2A: Mild ARDS -->
+  <div id="step-mild" class="node">
+    <div class="outcome-card">
+      <h3>Mild ARDS: Low Tidal Volume Strategy</h3>
+      <ul>
+        <li><strong>Low Tidal Volume (LTVV):</strong> Target 4–8 mL/kg Predicted Body Weight (PBW). Initial target: 6 mL/kg PBW.</li>
+        <li><strong>Pressure Limit:</strong> Maintain Plateau Pressure (Pplat) ≤ 30 cmH2O.</li>
+        <li><strong>PEEP Titration:</strong> Use Low PEEP / Higher FiO2 titration table (PEEP 5–10 cmH2O).</li>
+        <li><strong>Fluid Management:</strong> Conservative fluid strategy once hemodynamically stable (Aim for net neutral/negative).</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-check-driving-pressure')">Assess Driving Pressure →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2B: Moderate ARDS -->
+  <div id="step-moderate" class="node">
+    <div class="question-title">2. Moderate ARDS Management</div>
+    <div class="question-desc">Implement LTVV (4–8 mL/kg PBW) + High PEEP Strategy. Assess P/F ratio after optimization.</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('outcome-moderate-stable')">P/F Improves > 150</button>
+      <button class="option-btn" onclick="navigateTo('step-severe')">P/F Remains ≤ 150 despite PEEP</button>
+    </div>
+  </div>
+
+  <div id="outcome-moderate-stable" class="node">
+    <div class="outcome-card">
+      <h3>Moderate ARDS: Optimization</h3>
+      <ul>
+        <li><strong>Ventilation:</strong> Continue 6 mL/kg PBW; keep Pplat ≤ 30 cmH2O and Driving Pressure (ΔP = Pplat - PEEP) < 14 cmH2O.</li>
+        <li><strong>PEEP:</strong> Higher PEEP strategy (10–14 cmH2O).</li>
+        <li><strong>Sedation:</strong> Light-to-moderate sedation; minimize neuromuscular blockades unless dyssynchrony occurs.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+    </div>
+  </div>
+
+  <!-- STEP 2C: Severe ARDS -->
+  <div id="step-severe" class="node">
+    <div class="question-title">2. Severe ARDS / Refractory Hypoxemia Protocol (P/F ≤ 150)</div>
+    <div class="question-desc">Immediate escalation for severe ARDS failing baseline lung-protective ventilation.</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('outcome-prone-positioning')">Initiate Prone Positioning</button>
+      <button class="option-btn" onclick="navigateTo('step-refractory-rescue')">Refractory to Prone / Severe Decompensation</button>
+    </div>
+  </div>
+
+  <!-- OUTCOME: Prone Positioning -->
+  <div id="outcome-prone-positioning" class="node">
+    <div class="outcome-card urgent">
+      <h3>Prone Positioning & Neuromuscular Blockade</h3>
+      <ul>
+        <li><strong>Prone Positioning:</strong> Minimum 16 consecutive hours per day in prone position.</li>
+        <li><strong>NMBA:</strong> Short-term continuous cisatracurium infusion (up to 48 hours) for severe patient-ventilator dyssynchrony or refractory driving pressures.</li>
+        <li><strong>Ventilator Targets:</strong> Target PaO2 55–80 mmHg (SpO2 88–95%); allow Permissive Hypercapnia (pH ≥ 7.20).</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+      <button class="option-btn" style="width: auto; padding: 8px 16px;" onclick="navigateTo('step-refractory-rescue')">Failed Proning / Rescue Options →</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Driving Pressure Check -->
+  <div id="step-check-driving-pressure" class="node">
+    <div class="question-title">3. Advanced Mechanics: Driving Pressure (ΔP) Assessment</div>
+    <div class="question-desc">Calculate ΔP = Plateau Pressure - PEEP. Target ΔP < 14–15 cmH2O.</div>
+    <div class="outcome-card warning">
+      <h3>Elevated Driving Pressure Management</h3>
+      <ul>
+        <li><strong>If ΔP > 15 cmH2O:</strong> Reduce Vt by 0.5–1 mL/kg PBW (down to 4 mL/kg).</li>
+        <li><strong>Recruitment:</strong> Titrate PEEP to maximize compliance without overdistending healthy alveoli.</li>
+        <li><strong>Permissive Hypercapnia:</strong> Accept elevated PaCO2 as long as pH remains ≥ 7.20 (use sodium bicarbonate infusion only if severe acidemia threatens hemodynamics).</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Refractory Hypoxemia / Rescue -->
+  <div id="step-refractory-rescue" class="node">
+    <div class="question-title">4. Refractory Hypoxemia & Advanced Rescue Interventions</div>
+    <div class="question-desc">P/F < 80 despite proning, high PEEP, and NMBA. Select rescue therapy:</div>
+    <div class="options-grid">
+      <button class="option-btn" onclick="navigateTo('outcome-inhalational-vasodilators')">Inhaled Vasodilators (iNO / Epoprostenol)</button>
+      <button class="option-btn" onclick="navigateTo('outcome-ecmo-triage')">VV-ECMO Evaluation (EOLIA Criteria)</button>
+    </div>
+  </div>
+
+  <!-- OUTCOMES: Rescue -->
+  <div id="outcome-inhalational-vasodilators" class="node">
+    <div class="outcome-card warning">
+      <h3>Pulmonary Vasodilator Therapy</h3>
+      <ul>
+        <li><strong>Agents:</strong> Inhaled Nitric Oxide (iNO 5–20 ppm) or Inhaled Epoprostenol (PGI2).</li>
+        <li><strong>Mechanism:</strong> Selective pulmonary vasodilation in ventilated lung units to reduce V/Q mismatch.</li>
+        <li><strong>Note:</strong> Used primarily as a bridge to VV-ECMO or stabilization; does not improve overall mortality.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+    </div>
+  </div>
+
+  <div id="outcome-ecmo-triage" class="node">
+    <div class="outcome-card urgent">
+      <h3>Veno-Venous Extracorporeal Membrane Oxygenation (VV-ECMO)</h3>
+      <ul>
+        <li><strong>EOLIA Indications:</strong> PaO2/FiO2 < 50 for > 3 hours, OR PaO2/FiO2 < 80 for > 6 hours, OR pH < 7.15 with PaCO2 ≥ 60 mmHg despite optimal mechanical ventilation.</li>
+        <li><strong>Ultra-Lung-Protective Ventilation:</strong> On ECMO, drop Vt to 2–3 mL/kg PBW, Pplat ≤ 24 cmH2O, RR 4–10/min to promote lung rest.</li>
+        <li><strong>Cannulation:</strong> Dual-lumen single cannula (Femoral-Jugular) or bi-femoral setup.</li>
+      </ul>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="restart()">← Restart Protocol</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function navigateTo(nodeId) {
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => node.classList.remove('active'));
+
+    const targetNode = document.getElementById(nodeId);
+    if (targetNode) {
+      targetNode.classList.add('active');
+    }
+  }
+
+  function restart() {
+    const nodes = document.querySelectorAll('.node');
+    nodes.forEach(node => node.classList.remove('active'));
+    document.getElementById('step-start').classList.add('active');
+  }
+</script>
+
+</body>
+</html>
