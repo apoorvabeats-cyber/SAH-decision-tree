@@ -24,6 +24,7 @@ jobs:
           rsync -av --exclude='.git' --exclude='.github' --exclude='node_modules' ./ public/
 
       - name: Upload artifact for GitHub Pages
+        # Use the GitHub Pages artifact action (stable)
         uses: actions/upload-pages-artifact@v1
         with:
           path: public
