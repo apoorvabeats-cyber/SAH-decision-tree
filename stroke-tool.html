@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Interactive stroke decision tool: timing, infection, response, and comorbids — button-driven wizard with single outcome card." />
+  <title>Interactive Stroke Decision Tool</title>
+  <style>
+    :root{
+      --bg:#fff; --text:#0f172a; --muted:#64748b; --accent:#0284c7; --danger:#dc2626; --border:#e2e8f0;
+    }
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial; margin:0; padding:24px; background:var(--bg); color:var(--text); display:flex; justify-content:center}
+    .card{max-width:820px;width:100%;background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px;box-shadow:0 8px 20px rgba(2,6,23,0.04)}
+    .skip{position:absolute;left:-999px}
+    .skip:focus{left:12px;top:12px;z-index:1000;padding:8px 12px;background:var(--accent);color:#fff;border-radius:6px}
+    header h1{margin:0;font-size:1.15rem;letter-spacing:-0.02em}
+    header p{margin:6px 0 18px;color:var(--muted)}
+    .step{display:none}
+    .step.active{display:block}
+    .question{font-weight:600;margin-bottom:8px}
+    .help{color:var(--muted);margin-bottom:12px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+    .btn{background:#fff;border:1px solid var(--border);padding:12px 14px;border-radius:8px;text-align:left;cursor:pointer;font-weight:600}
+    .btn[aria-pressed="true"]{border-color:var(--accent);background:#f0f9ff;color:var(--accent)}
+    .btn:focus-visible{outline:3px solid rgba(2,132,199,0.18);outline-offset:2px}
+    .controls{display:flex;gap:8px;margin-top:18px;align-items:center;justify-content:space-between}
+    .control-left{display:flex;gap:8px}
+    .muted{color:var(--muted)}
+    .outcome{border-left:6px solid var(--accent);background:#f0f9ff;padding:14px;border-radius:6px}
+    .outcome.urgent{border-left-color:var(--danger);background:#fff2f2;color:#111}
+    .hidden{display:none}
+    @media print{.btn,.controls{display:none} .step{display:block} .card{border:none;box-shadow:none}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip">Skip to main content</a>
+
+  <main id="main" class="card" role="main">
+    <header>
+      <h1>Interactive Stroke Decision Tool</h1>
+      <p>Wizard: timing, infection, response to therapy, and comorbids. Button-driven — shows a single recommended outcome card.</p>
+    </header>
+
+    <!-- Step 1: Timing -->
+    <section id="step-timing" class="step active" aria-label="Timing">
+      <div class="question">1) Time last known well (LKW) — choose the applicable window</div>
+      <div class="help">This determines eligibility for thrombolysis/EVT.</div>
+      <div class="grid" role="list">
+        <button class="btn" role="listitem" data-value="0-4.5" onclick="setState('timing', '0-4.5', this)">0 to 4.5 hours</button>
+        <button class="btn" role="listitem" data-value="4.5-24" onclick="setState('timing', '4.5-24', this)">4.5 to 24 hours (or wake-up)</button>
+        <button class="btn" role="listitem" data-value=">24" onclick="setState('timing', '>24', this)">Greater than 24 hours</button>
+      </div>
+    </section>
+
+    <!-- Step 2: Infection status -->
+    <section id="step-infection" class="step" aria-label="Infection status">
+      <div class="question">2) Infection status</div>
+      <div class="help">Is there clinically suspected infection or fever? (affects sepsis workup and timing)</div>
+      <div class="grid">
+        <button class="btn" data-value="no" onclick="setState('infection','no',this)">No evidence of infection</button>
+        <button class="btn" data-value="suspected" onclick="setState('infection','suspected',this)">Suspected infection or fever</button>
+        <button class="btn" data-value="confirmed" onclick="setState('infection','confirmed',this)">Confirmed infection (on antibiotics)</button>
+      </div>
+    </section>
+
+    <!-- Step 3: Response to therapy -->
+    <section id="step-response" class="step" aria-label="Response to therapy">
+      <div class="question">3) Response to initial therapy / evolution</div>
+      <div class="help">How is the patient responding after initial interventions?</div>
+      <div class="grid">
+        <button class="btn" data-value="improving" onclick="setState('response','improving',this)">Improving</button>
+        <button class="btn" data-value="stable" onclick="setState('response','stable',this)">Stable</button>
+        <button class="btn" data-value="worsening" onclick="setState('response','worsening',this)">Worsening</button>
+      </div>
+    </section>
+
+    <!-- Step 4: Comorbid flags -->
+    <section id="step-comorbid" class="step" aria-label="Comorbid flags">
+      <div class="question">4) Comorbid / contraindication flags</div>
+      <div class="help">Select any that apply (multiple allowed). These modify recommendations.</div>
+      <div class="grid">
+        <button class="btn" aria-pressed="false" data-flag="anticoag" onclick="toggleFlag('anticoag', this)">On therapeutic anticoagulation</button>
+        <button class="btn" aria-pressed="false" data-flag="recent-surg" onclick="toggleFlag('recent-surg', this)">Recent major surgery (last 14 days)</button>
+        <button class="btn" aria-pressed="false" data-flag="pregnancy" onclick="toggleFlag('pregnancy', this)">Pregnancy</button>
+      </div>
+      <div class="controls" style="margin-top:16px">
+        <div class="control-left muted">You can go back to change earlier answers</div>
+        <div>
+          <button class="btn" onclick="goBack()">Back</button>
+          <button class="btn" onclick="computeOutcome()">Get Recommendation</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Outcome -->
+    <section id="outcome" class="step" aria-label="Recommendation">
+      <div id="outcomeCard" class="outcome hidden" role="region" aria-live="polite"></div>
+      <div class="controls">
+        <div class="muted">Result will reflect timing, infection, response, and flags.</div>
+        <div>
+          <button class="btn" onclick="restartWizard()">Start over</button>
+          <button class="btn" onclick="window.print()">Print</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Simple state object
+    const state = {
+      timing: null,
+      infection: null,
+      response: null,
+      flags: {
+        'anticoag': false,
+        'recent-surg': false,
+        'pregnancy': false
+      }
+    };
+
+    const steps = ['step-timing','step-infection','step-response','step-comorbid','outcome'];
+    let currentStep = 0;
+
+    function showStep(index){
+      currentStep = index;
+      steps.forEach((id,i)=>{
+        const el = document.getElementById(id);
+        if(el) el.classList.toggle('active', i===index);
+      });
+      // move focus to first heading in step
+      setTimeout(()=>{
+        const stepEl = document.querySelector('.step.active');
+        if(stepEl){
+          const h = stepEl.querySelector('.question') || stepEl.querySelector('h1') || stepEl;
+          if(h){ h.setAttribute('tabindex','-1'); h.focus(); }
+        }
+      },50);
+    }
+
+    function setState(key, value, btn){
+      state[key] = value;
+      // mark the selected button
+      const container = btn && btn.parentElement;
+      if(container){
+        const buttons = container.querySelectorAll('.btn');
+        buttons.forEach(b=> b.setAttribute('aria-pressed','false'));
+        btn.setAttribute('aria-pressed','true');
+      }
+      // advance to next step
+      const next = steps.indexOf('step-'+(key==='timing'? 'infection' : key==='infection'? 'response' : key==='response'? 'comorbid' : 'outcome'));
+      if(next>=0) showStep(next);
+    }
+
+    function toggleFlag(flag, btn){
+      state.flags[flag] = !state.flags[flag];
+      btn.setAttribute('aria-pressed', state.flags[flag] ? 'true' : 'false');
+    }
+
+    function goBack(){
+      if(currentStep>0) showStep(currentStep-1);
+    }
+
+    function restartWizard(){
+      // reset state
+      state.timing = null; state.infection = null; state.response = null;
+      Object.keys(state.flags).forEach(k=> state.flags[k]=false);
+      // reset UI pressed states
+      document.querySelectorAll('.btn[aria-pressed]').forEach(b=> b.setAttribute('aria-pressed','false'));
+      // unpress radio-like buttons
+      document.querySelectorAll('#step-timing .btn, #step-infection .btn, #step-response .btn').forEach(b=> b.setAttribute('aria-pressed','false'));
+      // hide outcome
+      document.getElementById('outcomeCard').classList.add('hidden');
+      showStep(0);
+    }
+
+    function computeOutcome(){
+      // Basic validation: ensure required answers selected
+      if(!state.timing || !state.infection || !state.response){
+        alert('Please complete all steps (timing, infection, response) before getting a recommendation.');
+        return;
+      }
+
+      const rec = buildRecommendation(state);
+      const card = document.getElementById('outcomeCard');
+      card.className = 'outcome';
+      if(rec.urgent) card.classList.add('urgent');
+      card.innerHTML = `<h3>${rec.title}</h3><p class="muted">${rec.subtitle}</p><ul>${rec.items.map(i=>`<li>${i}</li>`).join('')}</ul>`;
+      showStep(4);
+    }
+
+    // Rule engine: returns {title, subtitle, items:[], urgent:bool}
+    function buildRecommendation(s){
+      const items = [];
+      let urgent = false;
+      let title = 'General stroke care recommendations';
+      let subtitle = '';
+
+      // Timing-driven decisions
+      if(s.timing === '0-4.5'){
+        title = 'Early window — consider IV thrombolysis ± EVT';
+        subtitle = 'Onset ≤ 4.5 hours: evaluate IVT eligibility and CTA for LVO.';
+        items.push('Assess IV thrombolysis eligibility (BP ≤185/110, bleeding risk, recent surgery, anticoagulant status).');
+        items.push('If eligible, administer IV thrombolysis (rtPA or tenecteplase) without delaying EVT if LVO suspected.');
+        items.push('Obtain CTA/CTP rapidly to assess for LVO and large core.');
+      } else if(s.timing === '4.5-24'){
+        title = 'Extended window — consider advanced imaging + EVT if mismatch';
+        subtitle = '4.5–24 hours or wake-up: use perfusion/MRI criteria (DAWN/DEFUSE-3) to select patients for EVT.';
+        items.push('Obtain CT perfusion or MRI diffusion/perfusion to evaluate core-penumbra mismatch.');
+        items.push('If favorable mismatch, proceed with EVT (mechanical thrombectomy).');
+      } else {
+        title = 'Late window (>24h) — supportive & secondary prevention';
+        subtitle = 'Beyond 24 hours: focus on medical management and complications.';
+        items.push('Initiate/optimize antiplatelet or anticoagulation per stroke subtype and timing.');
+        items.push('Start high-intensity statin therapy and early rehabilitation.');
+      }
+
+      // Infection modifies recommendations
+      if(s.infection === 'suspected' || s.infection === 'confirmed'){
+        subtitle += ' Suspected/confirmed infection: evaluate and treat sepsis.';
+        items.push('Obtain source workup: blood cultures, chest x-ray, urine analysis, and consider empiric antibiotics if sepsis suspected.');
+        items.push('Treat fever and maintain euvolemia; fever control may improve outcomes.');
+      }
+
+      // Response to therapy
+      if(s.response === 'worsening'){
+        urgent = true;
+        items.unshift('Worsening neurological status — obtain urgent repeat neuroimaging (CT/CTA) and notify neurosurgery/stroke team.');
+        items.push('Consider escalation to ICU, elevated ICP measures, or emergent decompression if indicated.');
+      } else if(s.response === 'stable'){
+        items.push('Continue close monitoring (NIHSS/neuro checks) and maintain targets for BP and glucose.');
+      } else if(s.response === 'improving'){
+        items.push('Continue current therapy, plan for step-down monitoring and early rehabilitation assessment.');
+      }
+
+      // Comorbid flags adjust
+      if(s.flags['anticoag']){
+        items.push('On anticoagulation: check last dose, perform reversal if hemorrhage; for ischemic stroke, weigh IVT contraindication and consult hematology/stroke.');
+      }
+      if(s.flags['recent-surg']){
+        items.push('Recent major surgery increases bleeding risk — involve surgery and stroke teams; IV thrombolysis likely contraindicated.');
+      }
+      if(s.flags['pregnancy']){
+        items.push('Pregnancy: involve maternal-fetal medicine and stroke team early; balance maternal benefit and fetal risk for interventions.');
+      }
+
+      // Safety and general items
+      items.push('Maintain target BP per pathway (e.g., SBP goals depend on reperfusion plan).');
+      items.push('Ensure airway protection, oxygenation, and glucose control.');
+
+      return { title, subtitle, items, urgent };
+    }
+
+    // expose restart for UI
+    window.restartWizard = restartWizard;
+    window.navigateTo = function(){/* unused but reserved */};
+
+  </script>
+</body>
+</html>
